@@ -1,4 +1,4 @@
-
+#! perl
 use strict;
 use warnings;
 use Config;
@@ -26,7 +26,7 @@ BEGIN
     }
 }
 
-require "filter-util.pl" ;
+require "./filter-util.pl" ;
 
 use vars qw( $Inc $Perl $script ) ;
 
@@ -80,5 +80,12 @@ print "1..2\n" ;
 ok(1, ($? >> 8) == 0) ;
 ok(2, $a eq $expected_output) ;
 
-unlink $filename ;
+unlink $filename;
 
+# RT 101668 double free with __DATA__
+# echo is fairly common on all shells and archs I think.
+$a = `echo __DATA__ | $Perl $Inc -MFilter::exec=cat - 2>&1`;
+ok(3, ($? >> 8) == 0) ;
+
+# Note: To debug this case it is easier to put `echo __DATA__` into a data.sh
+# and `gdb --args perl5.22.0d-nt -Mblib -MFilter::exec=sh data.sh`
